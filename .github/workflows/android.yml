@@ -6,32 +6,21 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
-      - name: Extract Project Zip
-        run: unzip -o rustamovs-ai-clean.zip -d .
-
       - uses: actions/setup-node@v4
         with:
           node-version: 18
-          cache: 'npm'
-
-      - name: Force Install Dependencies
+      - name: Install and Build
         run: |
-          rm -rf node_modules package-lock.json
           npm install --legacy-peer-deps
-
-      - name: Build Web Assets
-        run: npm run build
-
-      - name: Create Android Project
+          npm run build
+      - name: Create APK
         run: |
           npm install @capacitor/core @capacitor/cli @capacitor/android
-          npx cap init "Rustamovs AI" com.rustamovs.ai --web-dir dist --nopm
-          npx cap add android
+          npx cap init "Rustamovs AI" com.rustamovs.ai --web-dir dist --nopm || true
+          npx cap add android || true
           npx cap copy
           cd android && chmod +x gradlew && ./gradlew assembleDebug
-
-      - name: Upload APK
+      - name: Upload
         uses: actions/upload-artifact@v4
         with:
           name: Rustamovs-AI-APK
