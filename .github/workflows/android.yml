@@ -5,32 +5,32 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
-      # Sənin yüklədiyin zip faylını açır
       - name: Extract Project Zip
-        run: unzip rustamovs-ai-clean.zip -d .
+        run: unzip -o rustamovs-ai-clean.zip -d .
 
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@v4
         with:
           node-version: 18
+          cache: 'npm'
 
-      - name: Install Dependencies
-        run: npm install
+      - name: Force Install Dependencies
+        run: |
+          rm -rf node_modules package-lock.json
+          npm install --legacy-peer-deps
 
       - name: Build Web Assets
         run: npm run build
 
-      # Android mühitini quraşdırır və APK çıxarır
-      - name: Build APK
+      - name: Create Android Project
         run: |
           npm install @capacitor/core @capacitor/cli @capacitor/android
-          npx cap init "Rustamovs AI" com.rustamovs.ai --web-dir dist
+          npx cap init "Rustamovs AI" com.rustamovs.ai --web-dir dist --nopm
           npx cap add android
           npx cap copy
           cd android && chmod +x gradlew && ./gradlew assembleDebug
 
-      # Hazır olan APK-nı sənə yükləmək üçün təqdim edir
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
