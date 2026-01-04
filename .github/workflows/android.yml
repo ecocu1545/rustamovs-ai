@@ -7,8 +7,9 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      # Sənin yüklədiyin zip faylını açır
       - name: Extract Project Zip
-        run: unzip project.zip -d .
+        run: unzip rustamovs-ai-clean.zip -d .
 
       - uses: actions/setup-node@v3
         with:
@@ -20,7 +21,8 @@ jobs:
       - name: Build Web Assets
         run: npm run build
 
-      - name: Setup Capacitor and Build APK
+      # Android mühitini quraşdırır və APK çıxarır
+      - name: Build APK
         run: |
           npm install @capacitor/core @capacitor/cli @capacitor/android
           npx cap init "Rustamovs AI" com.rustamovs.ai --web-dir dist
@@ -28,8 +30,9 @@ jobs:
           npx cap copy
           cd android && chmod +x gradlew && ./gradlew assembleDebug
 
+      # Hazır olan APK-nı sənə yükləmək üçün təqdim edir
       - name: Upload APK
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: Rustamovs-AI-APK
           path: android/app/build/outputs/apk/debug/app-debug.apk
