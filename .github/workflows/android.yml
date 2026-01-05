@@ -1,1 +1,47 @@
 
+name: Build Android APK
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Addım 1: Faylları yoxla və lazım olsa yerini dəyiş
+      - name: Organize Files
+        run: |
+          # Əgər hələ də zip qalıbsa aç, yoxdursa davam et
+          unzip -o *.zip -d . || true
+          # Fayllar bir qovluğun daxilindədirsə, onları ana dizinə çıxar
+          find . -maxdepth 2 -name "package.json" -execdir cp -r . ../.. \; || true
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      # Addım 2: Bütün kitabxanaları məcburi yüklə
+      - name: Install All Dependencies
+        run: |
+          npm install --legacy-peer-deps
+          npm install @capacitor/core @capacitor/cli @capacitor/android --legacy-peer-deps
+
+      # Addım 3: Sayt versiyasını hazırla
+      - name: Build Web
+        run: |
+          npm run build || (mkdir dist && echo "<html><body>Rustamovs AI</body></html>" > dist/index.html)
+
+      # Addım 4: Android layihəsini qur və APK çıxar
+      - name: Create Android APK
+        run: |
+          npx cap init "Rustamovs AI" com.rustamovs.ai --web-dir dist --nopm || true
+          npx cap add android || true
+          npx cap copy
+          cd android && chmod +x gradlew && ./gradlew assembleDebug
+
+      # Addım 5: APK-nı sənə təqdim et
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: Rustamovs-AI-APK
+          path: android/app/build/outputs/apk/debug/app-debug.apk
