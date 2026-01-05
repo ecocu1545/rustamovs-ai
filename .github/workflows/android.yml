@@ -7,37 +7,33 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
           node-version: 18
+          cache: 'npm'
 
-      - name: Faylları Düzəlt
-        run: |
-          # package.json yoxdursa, minimal versiya yarat
-          if [ ! -f "package.json" ]; then
-            npm init -y
-            npm install @capacitor/core @capacitor/cli @capacitor/android
-          fi
-          # dist qovluğu yoxdursa yarat
-          mkdir -p dist
-          echo "<html><body>Rustamovs AI</body></html>" > dist/index.html
+      - name: Install Dependencies
+        run: npm install --legacy-peer-deps
 
-      - name: Kitabxanaları Yüklə
+      - name: Build Web Project
+        run: npm run build
+
+      - name: Initialize Capacitor
         run: |
-          npm install --legacy-peer-deps || true
           npm install @capacitor/core @capacitor/cli @capacitor/android
-
-      - name: Android Layihəsini Qur
-        run: |
-          # Capacitor konfiqurasiyası yoxdursa yarat
-          if [ ! -f "capacitor.config.ts" ] && [ ! -f "capacitor.config.json" ]; then
-            npx cap init "Rustamovs AI" com.rustamovs.ai --web-dir dist
-          fi
+          # Konfiqurasiya faylı yoxdursa yaradırıq
+          npx cap init "Rustamovs AI" com.rustamovs.ai --web-dir dist --nopm || true
           npx cap add android || true
           npx cap copy
-          cd android && chmod +x gradlew && ./gradlew assembleDebug
 
-      - name: APK-nı tap və yüklə
+      - name: Build Android App
+        run: |
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleDebug
+
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: Rustamovs-AI-APK
