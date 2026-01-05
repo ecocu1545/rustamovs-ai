@@ -1,7 +1,0 @@
-{
-  "name": "Rustamovs AI",
-  "description": "Elcan Rüstəmov tərəfindən yaradılmış, Azərbaycan dilində mükəmməl işləyən və şəkil analiz etmək qabiliyyətinə malik süni intellekt köməkçisi.",
-  "requestFramePermissions": [
-    "camera"
-  ]
-}
